@@ -1,0 +1,16 @@
+
+WITH  a as (
+SELECT query_name
+		  , result
+		  , position
+		  , rating
+		  , rating / position as qa
+		  , CASE WHEN rating < 3 THEN 1 ELSE  0 END as poor
+FROM  Queries ) 
+
+
+SELECT query_name
+       , ROUND(sum(qa) / count(query_name) ,2) quality
+       , ROUND(sum(poor) /  count(query_name) * 100 ,2) poor_query_percentage 
+FROM a
+GROUP BY query_name
