@@ -6,3 +6,4 @@ FROM(
 ) a
 WHERE  total_weight <= 1000
 ORDER BY turn desc limit 1
+
