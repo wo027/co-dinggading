@@ -1,0 +1,37 @@
+
+
+-- 알고 싶었던 지표 : 유저수,가입수,참여수 >> 정확한 정의는 아니지만 먼저 3개로 나눔 
+-- 총유저수가 주는지 가입관련 수가 주는건지 참여하는 유저수가 주는 것인지 간단히 확인하려함 
+-- 8월부터 TOTAL 수 급감
+
+
+SELECT *
+      , (engagement / total) * 100      AS en_ratio         
+      , ROUND( (signup_flow / total) * 100,2)     AS sign_ratio        --  count로 구한 수는 비율 계산이 안나오네요,, 고민해서 SUM으로 바꿔야겠습니다  
+FROM(
+  SELECT  date_trunc('week', occurred_at)    AS week 
+        ,COUNT(DISTINCT CASE WHEN event_type ='engagement' THEN user_id END )     AS engagement
+        ,COUNT(DISTINCT CASE WHEN event_type ='signup_flow' THEN user_id END )    AS signup_flow
+        ,COUNT(DISTINCT CASE WHEN event_type ='engagement' THEN user_id END ) + 
+        COUNT(DISTINCT CASE WHEN event_type ='signup_flow' THEN user_id END )     AS total
+  FROM tutorial.yammer_events 
+  GROUP BY 1 
+  ORDER BY 1
+) a
+
+
+
+-- sign한 사람들중 얼마나 활성화로 전환되나
+-- 활성화율은 크게변동 x , 활성화수는 증가하는 추세 >> 따라서 engagement에 분석에 방향을 초점을 둘 예정
+
+SELECT  date_trunc('week', created_at)    AS week 
+        ,SUM(CASE WHEN state = 'active' THEN 1 END) AS active_num
+        ,COUNT(user_id)                             AS TOTAL
+        ,SUM(CASE WHEN state = 'active' THEN 1 END)  /  CAST(count(user_id) AS FLOAT)  act_ratio
+FROM tutorial.yammer_users
+WHERE created_at >= '2014-04-28' 
+GROUP BY 1 
+ORDER BY 1
+
+
+
