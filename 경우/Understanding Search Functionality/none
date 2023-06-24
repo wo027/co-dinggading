@@ -99,7 +99,7 @@ ORDER BY 2
 
 
 -- 검색자체의 만족도는 높다가 가정하고 다음 분석을 진행해보자함 
--- 접근자체가 잘못됐다고  여기서 느낌 새롭게 분석을 해보자  
+-- 새롭게 분석을 해보자  
 
 
 
@@ -140,6 +140,66 @@ WHERE search_step <> 'search_click'
 
 
 
+-- 전체 검색 단계의 클릭률을 살펴봄
+-- 일별로 단계를 분석했을때 대체적으로 자동완성의 클릭률이 가장 높음 
+
+WITH search_event AS (
+SELECT user_id
+       , occurred_at
+       , CASE WHEN event_name LIKE '%search_click%' THEN 'search_click' ELSE event_name END AS search_step
+FROM tutorial.yammer_events
+WHERE event_type = 'engagement'
+AND event_name LIKE '%search%'
+ORDER BY 1 , 2
+)
 
 
+SELECT *
+      , ROUND( count / sum(count) over(PARTITION BY ocuur_day) * 100 ,1) AS ratio
+FROM (
+  SELECT 
+           date_trunc('day', occurred_at)    AS ocuur_day
+          , search_step
+          , count(*)
+  FROM search_event
+  GROUP BY  date_trunc('day', occurred_at) , search_step
+  order by  1
+) a 
+order by 1,4 DESC
+
+
+
+-- search_click 단계별 클릭수 >> 1-10이 관련성 높은 추천순 
+-- 전체 기간에서 보면 얼추 관련순으로 클릭수가 많음
+
+SELECT *
+    , ROUND(click_cnt / SUM(click_cnt) over() * 100 ,2)  as raito
+FROM (
+  SELECT 
+        event_name
+        , count(user_id)                   AS click_cnt
+  FROM search_event
+  WHERE search_step = 'search_click'
+  GROUP BY 1
+) a
+order by 2 DESC
+
+
+-- but 일별로 볼때 매우 뒤죽박죽 
+-- 일별로는 yammer에서 관련성 높은 결과순으로 클릭이 잘 진행되지 않음 >> 왜 이런 일별로는 일관성 없는 결과가 나왔을까
+
+
+SELECT *
+      , ROW_NUMBER() OVER (PARTITION BY ocuur_day)
+      , ROUND( click_cnt / sum(click_cnt) over(PARTITION BY ocuur_day ) *100 , 2) AS ratio
+FROM (
+  SELECT 
+         date_trunc('day', occurred_at)    AS ocuur_day
+        , event_name
+        , count(user_id)                   AS click_cnt
+  FROM search_event
+  WHERE search_step = 'search_click'
+  GROUP BY date_trunc('day', occurred_at) , event_name
+  ORDER BY 1 ,3 DESC
+)a
 
