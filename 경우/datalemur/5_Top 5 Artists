@@ -1,0 +1,11 @@
+SELECT *
+FROM (
+  SELECT ar.artist_name
+         , DENSE_RANK() OVER( ORDER BY COUNT(so.song_id) DESC ) AS artist_rank
+  FROM artists ar
+    INNER JOIN songs  so  ON  ar.artist_id = so.artist_id
+    INNER JOIN global_song_rank so_ra ON so.song_id = so_ra.song_id
+  WHERE rank <=10
+  GROUP BY ar.artist_name
+) top_10
+WHERE artist_rank <= 5

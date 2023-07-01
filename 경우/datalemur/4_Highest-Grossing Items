@@ -1,0 +1,58 @@
+
+
+SELECT category
+      , product
+      , total_spend
+FROM (
+  SELECT 
+    category, 
+    product, 
+    SUM(spend) AS total_spend,
+    row_number() OVER(PARTITION BY category ORDER BY SUM(spend) DESC) AS ranking
+  FROM product_spend
+  WHERE EXTRACT(YEAR FROM transaction_date) = 2022
+  GROUP BY category, product
+) a 
+WHERE ranking <3
+
+
+
+/*
+SELECT category
+      , product
+      , total_spend
+FROM (
+  SELECT *
+        , row_number() over(PARTITION BY category ORDER BY total_spend  DESC) AS rank 
+  FROM (
+    SELECT category
+          , product
+          , sum(spend)   AS total_spend
+    FROM product_spend 
+    WHERE EXTRACT('year' FROM transaction_date) = 2022
+    GROUP BY  category , product
+  ) a 
+)b 
+WHERE rank < 3
+
+*/ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
