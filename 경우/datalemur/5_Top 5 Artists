@@ -9,3 +9,4 @@ FROM (
   GROUP BY ar.artist_name
 ) top_10
 WHERE artist_rank <= 5
+

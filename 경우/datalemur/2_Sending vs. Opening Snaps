@@ -1,6 +1,4 @@
 
-
-
 SELECT age_bucket
       , ROUND( SUM(CASE WHEN activity_type = 'send' THEN time_spent END) 
          / SUM(CASE WHEN activity_type <> 'chat' THEN time_spent END ) * 100,2) AS send_perc
@@ -13,7 +11,11 @@ GROUP BY age_bucket
 
 
 
+
+
+
 /*
+
 WITH a as (
 SELECT *
       , CASE WHEN activity_type = 'send' THEN time_spent END  AS send_time
@@ -33,7 +35,9 @@ SELECT age_bucket
 FROM a   
 GROUP BY age_bucket 
 
-*/ 
+*/  
+
+
 
 
 
