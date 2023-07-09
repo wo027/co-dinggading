@@ -1,0 +1,30 @@
+SELECT age_bucket
+      , ROUND( SUM(CASE WHEN activity_type = 'send' THEN time_spent END) 
+         / SUM(CASE WHEN activity_type <> 'chat' THEN time_spent END ) * 100,2) AS send_perc
+      , ROUND( SUM(CASE WHEN activity_type = 'open' THEN time_spent END) 
+         / SUM(CASE WHEN activity_type <> 'chat' THEN time_spent END )* 100,2)  AS open_perc
+FROM activities  act
+  INNER JOIN age_breakdown AS age 
+    ON act.user_id = age.user_id
+GROUP BY age_bucket
+
+/*
+
+WITH a as (
+SELECT *
+      , CASE WHEN activity_type = 'send' THEN time_spent END  AS send_time
+      , CASE WHEN activity_type = 'open' THEN time_spent END  AS open_time
+      , CASE WHEN activity_type = 'chat' THEN time_spent END AS chat_time
+FROM activities  act
+  INNER JOIN age_breakdown AS age 
+    ON act.user_id = age.user_id
+)
+SELECT age_bucket 
+      ,ROUND(sum(send_time)  / (sum(send_time) + sum(open_time)) * 100 ,2) AS send_perc
+      ,ROUND(sum(open_time) / (sum(send_time) + sum(open_time)) * 100 ,2)  AS open_perc
+     -- , sum(send_time) + sum(open_time)
+     -- , sum(open_time)
+     -- , sum(send_time) 
+FROM a   
+GROUP BY age_bucket 
+*/ 

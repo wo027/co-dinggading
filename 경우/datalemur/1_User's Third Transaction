@@ -1,0 +1,10 @@
+SELECT user_id
+      , spend
+      , transaction_date
+FROM (
+  SELECT *
+        ,row_number() OVER(PARTITION BY user_id ORDER BY transaction_date ) AS id_num
+  FROM transactions
+) a
+WHERE  id_num = 3
+
